@@ -20,7 +20,7 @@ python -m spacy download en
 
 Run with:
 ```bash
-python3 injectErrors.py --file <name_of_input_file> --level <noise_level> --splitType <split_type>
+python3 main.py --file <name_of_input_file> --level <noise_level> --splitType <split_type>
 ```
 
 Note that:
@@ -31,7 +31,7 @@ The output file will be output as ```<splitType>Articles_<level>.txt```in a sepa
 
 ## Testing
 In the folder ```resources``` a file named test.txt is included. It consists of 10 sentences taken from the [Gigaword](https://github.com/harvardnlp/sent-summary) corpus. This pipeline may be tested by using this file by running the following command:
-```python3 injectErrors.py --file resources/test.txt --level 2 --splitType test```
+```python3 main.py --file resources/test.txt --level 2 --splitType test```
 The output file for comparison will be output to ```./errorInjectionOutput/testArticles_2.txt```.
 
 ## Paper
