@@ -5,12 +5,7 @@ outputting it as a separate file. The 'level' of errors is configurable
 switch a set number of words for phonetically-similar alternatives. Similar
 vectors are calculated using Annoy.
 Run with:
-python3 injectErrors.py --file i --level j --splitType k
-where
-i = name of file to add noise to
-j = level of errors (integer between 1 and 5)
-k = split type (either test, train or dev) - this is only used to name the output file
-python -m spacy download en
+python3 injectErrors.py --file <name_of_input_file> --level <noise_level> --splitType <split_type>
 """
 from annoy import AnnoyIndex
 from optparse import OptionParser
@@ -166,7 +161,7 @@ def initialiseAnnoy():
 
 	# Loads Annoy ADJ vectors
 	print("\n\tLoading adjective vectors...")
-	for i, line in enumerate(open("adjVectors", "r")):
+	for i, line in enumerate(open("./vectors/adjVectors", "r")):
 		line = line.strip()
 		word, vec_s = line.split("  ")
 		vec = [float(n) for n in vec_s.split()]
@@ -177,7 +172,7 @@ def initialiseAnnoy():
 
 	# Loads Annoy NOUN vectors
 	print("\n\tLoading noun vectors...")
-	for i, line in enumerate(open("nounVectors", "r")):
+	for i, line in enumerate(open("./vectors/nounVectors", "r")):
 		line = line.strip()
 		word, vec_s = line.split("  ")
 		vec = [float(n) for n in vec_s.split()]
@@ -188,7 +183,7 @@ def initialiseAnnoy():
 
 	# Loads Annoy VERB vectors
 	print("\n\tLoading verb vectors...")
-	for i, line in enumerate(open("verbVectors", "r")):
+	for i, line in enumerate(open("./vectors/verbVectors", "r")):
 		line = line.strip()
 		word, vec_s = line.split("  ")
 		vec = [float(n) for n in vec_s.split()]
