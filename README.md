@@ -37,4 +37,4 @@ In the folder ```resources``` a file named test.txt is included. It consists of 
 The output file for comparison will be output to ```./errorInjectionOutput/testArticles_2.txt```.
 
 ## Paper
-The full paper that implements this pipeline can be found [here](http://uu.diva-portal.org/smash/record.jsf?pid=diva2%3A1321076&dswid=1942). Further details on the pipeline may also be found here.
+The paper for which this pipeline was created can be found [here](http://uu.diva-portal.org/smash/record.jsf?pid=diva2%3A1321076&dswid=1942). Further details on the pipeline may also be found here.
