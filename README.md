@@ -11,7 +11,7 @@ This pipeline functions by first loading set of adjective, verb and noun phoneti
 Python 3 is required to run this programme. The following installations are also required:
 
 ```bash
-pip3 install spacy
+pip3 install -U spacy
 pip3 install annoy
 python3 -m spacy download en
 ```
