@@ -1,7 +1,7 @@
 """
 Takes an input file and injects a set number of errors into the input,
 outputting it as a separate file. The 'level' of errors is configurable
-(see variable 'level'). This method uses phonetic similarity vectors to
+(see variable 'level') and must be between 1 and 5. This method uses phonetic similarity vectors to
 switch a set number of words for phonetically-similar alternatives. Similar
 vectors are calculated using Annoy.
 Run with:
@@ -20,7 +20,6 @@ def injectErrors():
 
 	# Other variables
 	acceptable_pos = ["ADJ", "NOUN", "VERB"]
-	failures = 0
 	repFailures = 0
 	sentenceFailures = 0
 
@@ -28,7 +27,10 @@ def injectErrors():
 	print("\n\tLoading SpaCy model...")
 	model = spacy.load("en")
 
-	initialiseAnnoy()
+	# Initialises Annoy vectors for each part of speech
+	adj_annoy, adjectives, adj_lookup = initialiseAnnoy("adjective")
+	noun_annoy, nouns, noun_lookup = initialiseAnnoy("noun")
+	verb_annoy, verbs, verb_lookup = initialiseAnnoy("verb")
 
 	name_finder = {
 		"ADJ": (adj_lookup, adj_annoy, adjectives),
@@ -46,7 +48,6 @@ def injectErrors():
 		for i, line in enumerate(f):
 
 			replacements = []
-
 			target_changes = level
 			found = 0
 
@@ -85,10 +86,9 @@ def injectErrors():
 							break
 
 					except Exception:
-						failures += 1  # Failures is printed at end to give an idea of how many cases failed
+						pass # Simply means that particular targeted word did not exist in POS look up
 
 			if found < target_changes:
-				# print("SENTENCE FAILED")
 				output_file.write("FFFAILED SSSENTENCE\n")
 				sentenceFailures += 1
 				continue
@@ -106,16 +106,13 @@ def injectErrors():
 					repFailures += 1
 
 			final_sentence = " ".join(updated_sentence)
-
 			# print("ORIGINAL Sentence is:\n{}".format(article))
 			# print("FINAL Sentence is:\n{}".format(final_sentence))
-
 			output_file.write(final_sentence)
 
 	# Print statements to document number of errors while iterating through sentences
-	print("\n----- Total number of failures: {} -----".format(failures))
 	print("\n----- Total number of replacement failures: {} -----".format(repFailures))
-	print("\n----- Total number of sentence failures: {} -----".format(sentenceFailures))
+	print("\n----- Total number of sentence failures: {} -----\n".format(sentenceFailures))
 
 	output_file.close()
 
@@ -148,50 +145,63 @@ def getOptions():
 	return input_file, level, splitType
 
 # Initialises and creates Annoy vector spaces
-def initialiseAnnoy():
-	adj_annoy = AnnoyIndex(50, metric='angular')
-	noun_annoy = AnnoyIndex(50, metric='angular')
-	verb_annoy = AnnoyIndex(50, metric='angular')
-	adjectives = list()
-	adj_lookup = dict()
-	nouns = list()
-	noun_lookup = dict()
-	verbs = list()
-	verb_lookup = dict()
-
+def initialiseAnnoy(part_of_speech):
 	# Loads Annoy ADJ vectors
-	print("\n\tLoading adjective vectors...")
-	for i, line in enumerate(open("./vectors/adjVectors", "r")):
-		line = line.strip()
-		word, vec_s = line.split("  ")
-		vec = [float(n) for n in vec_s.split()]
-		adj_annoy.add_item(i, vec)
-		adj_lookup[word] = vec
-		adjectives.append(word)
-	adj_annoy.build(50)
+	if part_of_speech == "adjective":
+		adj_annoy = AnnoyIndex(50, metric='angular')
+		adjectives = list()
+		adj_lookup = dict()
 
-	# Loads Annoy NOUN vectors
-	print("\n\tLoading noun vectors...")
-	for i, line in enumerate(open("./vectors/nounVectors", "r")):
-		line = line.strip()
-		word, vec_s = line.split("  ")
-		vec = [float(n) for n in vec_s.split()]
-		noun_annoy.add_item(i, vec)
-		noun_lookup[word] = vec
-		nouns.append(word)
-	noun_annoy.build(50)
+		print("\n\tLoading adjective vectors...")
+		for i, line in enumerate(open("./vectors/adjVectors", "r")):
+			line = line.strip()
+			word, vec_s = line.split("  ")
+			vec = [float(n) for n in vec_s.split()]
+			adj_annoy.add_item(i, vec)
+			adj_lookup[word] = vec
+			adjectives.append(word)
+		adj_annoy.build(50)
+
+		return adj_annoy, adjectives, adj_lookup
 
 	# Loads Annoy VERB vectors
-	print("\n\tLoading verb vectors...")
-	for i, line in enumerate(open("./vectors/verbVectors", "r")):
-		line = line.strip()
-		word, vec_s = line.split("  ")
-		vec = [float(n) for n in vec_s.split()]
-		verb_annoy.add_item(i, vec)
-		verb_lookup[word] = vec
-		verbs.append(word)
-	verb_annoy.build(50)
+	elif part_of_speech == "verb":
+		verb_annoy = AnnoyIndex(50, metric='angular')
+		verbs = list()
+		verb_lookup = dict()
 
+		print("\n\tLoading verb vectors...")
+		for i, line in enumerate(open("./vectors/verbVectors", "r")):
+			line = line.strip()
+			word, vec_s = line.split("  ")
+			vec = [float(n) for n in vec_s.split()]
+			verb_annoy.add_item(i, vec)
+			verb_lookup[word] = vec
+			verbs.append(word)
+		verb_annoy.build(50)
+
+		return verb_annoy, verbs, verb_lookup
+
+	# Loads Annoy NOUN vectors
+	elif part_of_speech == "noun":
+		noun_annoy = AnnoyIndex(50, metric='angular')
+		nouns = list()
+		noun_lookup = dict()
+
+		print("\n\tLoading noun vectors...")
+		for i, line in enumerate(open("./vectors/nounVectors", "r")):
+			line = line.strip()
+			word, vec_s = line.split("  ")
+			vec = [float(n) for n in vec_s.split()]
+			noun_annoy.add_item(i, vec)
+			noun_lookup[word] = vec
+			nouns.append(word)
+		noun_annoy.build(50)
+
+		return noun_annoy, nouns, noun_lookup
+
+	else:
+		raise Exception("Part of speech must either be 'adjective', 'verb' or 'noun'.")
 
 
 injectErrors()
